@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Litros</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            max-width: 300px;
+            position: relative;
+        }
+
+        label {
+            margin-bottom: 8px;
+        }
+
+        input {
+            margin-bottom: 16px;
+            padding: 8px;
+        }
+
+        button {
+            padding: 8px;
+            cursor: pointer;
+            background-color: yellow; /* Cor amarela */
+            border: none;
+        }
+
+        p {
+            margin-top: 16px;
+        }
+
+        /* Estilo para a lista de sugestões */
+        .suggestions {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            max-height: 100px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            position: absolute;
+            background-color: white;
+            width: 100%; /* Alinhar com o campo de entrada */
+            display: none; /* Inicialmente oculta */
+        }
+
+        .suggestions li {
+            padding: 8px;
+            cursor: pointer;
+        }
+
+        .suggestions li:hover {
+            background-color: #f0f0f0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Calculadora de Litros</h1>
+    <form method="post" action="/">
+        <label for="produto">Nome do Produto:</label>
+        <input type="text" name="produto" id="produto" required>
+
+        <!-- Lista de sugestões -->
+        <ul class="suggestions" id="suggestions"></ul>
+
+        <label for="peso_balanca">Peso da Balança (kg):</label>
+        <input type="text" name="peso_balanca" required>
+
+        <button type="submit">Calcular</button>
+    </form>
+
+    {% if resultado %}
+        <p>{{ resultado }}</p>
+    {% endif %}
+
+    <script>
+        // Elementos do DOM
+        var produtoInput = document.getElementById('produto');
+        var suggestionsList = document.getElementById('suggestions');
+
+        // Evento de digitação no campo de produto
+        produtoInput.addEventListener('input', function() {
+            var termoDigitado = produtoInput.value.toUpperCase();
+
+            // Fazer uma solicitação AJAX para buscar sugestões do servidor
+            fetch('/sugestoes?termo=' + termoDigitado)
+                .then(response => response.json())
+                .then(data => {
+                    // Limpar a lista de sugestões
+                    suggestionsList.innerHTML = '';
+
+                    // Adicionar sugestões à lista
+                    data.sugestoes.forEach(function(sugestao) {
+                        var li = document.createElement('li');
+                        li.textContent = sugestao;
+                        li.addEventListener('click', function() {
+                            produtoInput.value = sugestao;
+                            suggestionsList.style.display = 'none'; // Ocultar a lista após selecionar uma sugestão
+                        });
+                        suggestionsList.appendChild(li);
+                    });
+
+                    // Exibir a lista de sugestões
+                    suggestionsList.style.display = 'block';
+                });
+        });
+    </script>
+</body>
+</html>
